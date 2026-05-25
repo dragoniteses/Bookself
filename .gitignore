@@ -1,0 +1,42 @@
+# Visual Studio / .NET
+.vs/
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider
+.idea/
+
+# Build results
+publish/
+
+# SQLite DB files (local dev)
+DB/
+*.db
+*.db-wal
+*.db-shm
+
+# NuGet packages
+*.nupkg
+**/packages/
+
+# Resharper
+_ReSharper*/
+
+# Misc
+.vscode/
+
+# Logs
+*.log
+
+# Sensitive files
+appsettings.*.json
+
+# JetBrains Rider
+.idea/
+
+# Mac
+.DS_Store
