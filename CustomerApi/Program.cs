@@ -56,6 +56,7 @@ builder.Services.AddDbContext<CustomerContext>(options =>
 
 // Register application services
 builder.Services.AddScoped<CustomerApi.Services.IRegisterService, CustomerApi.Services.RegisterService>();
+builder.Services.AddScoped<CustomerApi.Services.ILoginService, CustomerApi.Services.LoginService>();
 
 var app = builder.Build();
 

@@ -9,10 +9,12 @@ namespace CustomerApi.Controllers
     public class CustomerApiController : ControllerBase
     {
         private readonly IRegisterService _registerService;
+        private readonly ILoginService _loginService;
 
-        public CustomerApiController(IRegisterService registerService)
+        public CustomerApiController(IRegisterService registerService, ILoginService loginService)
         {
             _registerService = registerService;
+            _loginService = loginService;
         }
 
         [HttpPost("register")]
@@ -26,6 +28,19 @@ namespace CustomerApi.Controllers
                 return Conflict("Username already exists.");
 
             return CreatedAtAction(nameof(Register), new { username = request.Username }, null);
+        }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
+                return BadRequest("Username and password are required.");
+
+            var response = await _loginService.LoginAsync(request);
+            if (!response.Success)
+                return Unauthorized(response);
+
+            return Ok(response);
         }
     }
 }
