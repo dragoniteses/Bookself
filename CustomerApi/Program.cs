@@ -85,6 +85,7 @@ builder.Services.AddDbContext<CustomerContext>(options =>
 builder.Services.AddScoped<CustomerApi.Services.IRegisterService, CustomerApi.Services.RegisterService>();
 builder.Services.AddScoped<CustomerApi.Services.ILoginService, CustomerApi.Services.LoginService>();
 builder.Services.AddScoped<CustomerApi.Services.IJwtTokenService, CustomerApi.Services.JwtTokenService>();
+builder.Services.AddScoped<CustomerApi.Services.ICustomerService, CustomerApi.Services.CustomerService>();
 
 var app = builder.Build();
 

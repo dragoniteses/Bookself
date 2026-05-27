@@ -13,12 +13,14 @@ namespace CustomerApi.Controllers
         private readonly IRegisterService _registerService;
         private readonly ILoginService _loginService;
         private readonly IJwtTokenService _jwtTokenService;
+        private readonly ICustomerService _customerService;
 
-        public CustomerApiController(IRegisterService registerService, ILoginService loginService, IJwtTokenService jwtTokenService)
+        public CustomerApiController(IRegisterService registerService, ILoginService loginService, IJwtTokenService jwtTokenService, ICustomerService customerService)
         {
             _registerService = registerService;
             _loginService = loginService;
             _jwtTokenService = jwtTokenService;
+            _customerService = customerService;
         }
 
         [HttpPost("register")]
@@ -56,6 +58,21 @@ namespace CustomerApi.Controllers
                 return Unauthorized("Invalid token");
 
             return Ok(new { message = $"This is a protected endpoint. Your customer ID is: {customerId}" });
+        }
+
+        [HttpGet("info")]
+        [Authorize]
+        public async Task<IActionResult> GetCustomerInfo()
+        {
+            var customerId = AuthHelper.GetCustomerIdFromRequest(Request, _jwtTokenService);
+            if (customerId == null)
+                return Unauthorized("Invalid token");
+
+            var customer = await _customerService.GetCustomerInfoAsync(customerId.Value);
+            if (customer == null)
+                return NotFound("Customer not found");
+
+            return Ok(customer);
         }
     }
 }
