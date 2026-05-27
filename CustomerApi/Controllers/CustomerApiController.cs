@@ -74,5 +74,16 @@ namespace CustomerApi.Controllers
 
             return Ok(customer);
         }
+
+        [HttpPost("logout")]
+        [Authorize]
+        public IActionResult Logout()
+        {
+            var customerId = AuthHelper.GetCustomerIdFromRequest(Request, _jwtTokenService);
+            if (customerId == null)
+                return Unauthorized("Invalid token");
+
+            return Ok(new { message = "Logout successful. Please remove the token from your client." });
+        }
     }
 }
