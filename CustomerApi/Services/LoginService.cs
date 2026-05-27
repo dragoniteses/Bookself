@@ -13,10 +13,12 @@ namespace CustomerApi.Services
     public class LoginService : ILoginService
     {
         private readonly CustomerContext _db;
+        private readonly IJwtTokenService _jwtTokenService;
 
-        public LoginService(CustomerContext db)
+        public LoginService(CustomerContext db, IJwtTokenService jwtTokenService)
         {
             _db = db;
+            _jwtTokenService = jwtTokenService;
         }
 
         public async Task<LoginResponse> LoginAsync(LoginRequest request)
@@ -30,11 +32,24 @@ namespace CustomerApi.Services
             if (!VerifyPassword(request.Password, customer.PasswordHash, customer.PasswordSalt))
                 return new LoginResponse { Success = false, Message = "Invalid username or password." };
 
+            // Generate JWT token
+            var token = _jwtTokenService.GenerateToken(customer.Id, customer.Username);
+
             // Remove sensitive data before returning
             customer.PasswordHash = string.Empty;
             customer.PasswordSalt = string.Empty;
 
-            return new LoginResponse { Success = true, Message = "Login successful.", Customer = customer };
+            return new LoginResponse
+            {
+                Success = true,
+                Message = "Login successful.",
+                Customer = customer,
+                Token = new TokenResponse
+                {
+                    Token = token,
+                    ExpiresIn = 3600
+                }
+            };
         }
 
         private bool VerifyPassword(string password, string passwordHash, string passwordSalt)

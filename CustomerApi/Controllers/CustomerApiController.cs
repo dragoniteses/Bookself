@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using CustomerApi.Models;
 using CustomerApi.Services;
+using CustomerApi.Helpers;
 
 namespace CustomerApi.Controllers
 {
@@ -10,11 +12,13 @@ namespace CustomerApi.Controllers
     {
         private readonly IRegisterService _registerService;
         private readonly ILoginService _loginService;
+        private readonly IJwtTokenService _jwtTokenService;
 
-        public CustomerApiController(IRegisterService registerService, ILoginService loginService)
+        public CustomerApiController(IRegisterService registerService, ILoginService loginService, IJwtTokenService jwtTokenService)
         {
             _registerService = registerService;
             _loginService = loginService;
+            _jwtTokenService = jwtTokenService;
         }
 
         [HttpPost("register")]
@@ -41,6 +45,17 @@ namespace CustomerApi.Controllers
                 return Unauthorized(response);
 
             return Ok(response);
+        }
+
+        [HttpGet("profile")]
+        [Authorize]
+        public IActionResult GetProfile()
+        {
+            var customerId = AuthHelper.GetCustomerIdFromRequest(Request, _jwtTokenService);
+            if (customerId == null)
+                return Unauthorized("Invalid token");
+
+            return Ok(new { message = $"This is a protected endpoint. Your customer ID is: {customerId}" });
         }
     }
 }

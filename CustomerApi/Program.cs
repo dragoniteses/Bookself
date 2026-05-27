@@ -1,6 +1,9 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using CustomerApi.Data;
 using System.IO;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +26,30 @@ foreach (var name in new[] { "customerinfo.db", "customerinfo.db-wal", "customer
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+// Configure JWT Authentication
+var jwtSecretKey = builder.Configuration["Jwt:SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey not configured");
+var key = Encoding.ASCII.GetBytes(jwtSecretKey);
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(key),
+        ValidateIssuer = true,
+        ValidIssuer = "CustomerApi",
+        ValidateAudience = true,
+        ValidAudience = "CustomerApiUsers",
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.Zero
+    };
+});
 
 // Configure DbContext for SQLite
 // Build absolute path for SQLite file so EF uses the DB in the `DB` folder
@@ -57,6 +84,7 @@ builder.Services.AddDbContext<CustomerContext>(options =>
 // Register application services
 builder.Services.AddScoped<CustomerApi.Services.IRegisterService, CustomerApi.Services.RegisterService>();
 builder.Services.AddScoped<CustomerApi.Services.ILoginService, CustomerApi.Services.LoginService>();
+builder.Services.AddScoped<CustomerApi.Services.IJwtTokenService, CustomerApi.Services.JwtTokenService>();
 
 var app = builder.Build();
 
@@ -75,6 +103,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

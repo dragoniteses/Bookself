@@ -5,5 +5,6 @@ namespace CustomerApi.Models
         public bool Success { get; set; }
         public string Message { get; set; } = string.Empty;
         public CustomerInfo? Customer { get; set; }
+        public TokenResponse? Token { get; set; }
     }
 }
